@@ -11,14 +11,25 @@ const app = express()
 app.get("/*",async (req, res) => {
     const host = req.hostname
     const id = host.split(".")[0]
-    const filePath = req.path;
+    const filePath = req.path
 
     const contents = await s3.getObject({
         Bucket: "vercel",
-        Key: `dist/${id}${filePath}`
+        Key: `dist/${id}${req.path}`
     }).promise()
 
-    const type = filePath.endsWith("html") ? "text/html" : filePath.endsWith("css") ? "text/css" : "application/javascript"
+        let type;
+        if (req.path.endsWith("html")) {
+        type = "text/html";
+        } else if (req.path.endsWith("css")) {
+        type = "text/css";
+        } else if (req.path.endsWith("svg")) {
+        type = "image/svg+xml";
+        } else {
+        type = "application/javascript";
+        }
+        // console.log(type);
+        
     res.set("Content-Type", type)
     res.send(contents.Body)
 })
